@@ -40,6 +40,10 @@ frontend/dist/
 dist/
 build/
 
+# Keep frontend shared utilities and translations
+!frontend/src/lib/
+!frontend/src/lib/**
+
 # --- Variáveis de Ambiente e Segredos (CRÍTICO) ---
 # Jamais suba o arquivo .env com suas senhas reais
 .env
