@@ -5,9 +5,8 @@ import requests
 import os
 import mimetypes
 from urllib.parse import urlparse, unquote # <--- NOVOS IMPORTS
-from sqlalchemy.orm import Session
 from database import SessionLocal
-from models import CampaignLog
+from models import CampaignLog, Campaign
 
 # --- Configurações ---
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
@@ -136,8 +135,21 @@ def send_via_evolution(payload):
         if campaign_id: save_log(campaign_id, payload['phone'], payload['name'], "failed", error=str(e))
 
 def callback(ch, method, properties, body):
+    db = None
+    acked = False
     try:
         payload = json.loads(body)
+
+        campaign_id = payload.get("campaign_id")
+        if campaign_id:
+            db = SessionLocal()
+            campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+            if campaign and campaign.status == "paused":
+                print(f"⏸️ Campanha {campaign_id} pausada. Ignorando mensagem para {payload.get('phone')}")
+                ch.basic_ack(delivery_tag=method.delivery_tag)
+                acked = True
+                return
+
         send_via_evolution(payload)
         
         delay = payload.get('delay_seconds', 5)
@@ -146,7 +158,10 @@ def callback(ch, method, properties, body):
     except Exception as e:
         print(f"Erro no processamento da fila: {e}")
     finally:
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        if db:
+            db.close()
+        if not acked:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def start_worker():
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
