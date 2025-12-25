@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, Send, Eye, AlertCircle, RefreshCw, BarChart2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Send, AlertCircle, RefreshCw, BarChart2, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/ui/use-toast';
 
 const CampaignStats = () => {
   const { id } = useParams();
-  const [stats, setStats] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -24,8 +23,8 @@ const CampaignStats = () => {
     try {
       const response = await fetch(`http://localhost:8000/campaigns/${id}/stats`);
       if (response.ok) {
-        const data = await response.json();
-        setStats(data);
+        const jsonData = await response.json();
+        setData(jsonData);
       } else {
         throw new Error('Failed to fetch stats');
       }
@@ -45,17 +44,44 @@ const CampaignStats = () => {
     return Math.round((value / total) * 100);
   };
 
-  const cards = stats ? [
-    { label: t('stats.total'), value: stats.total || 0, icon: Send, color: 'text-blue-500', bg: 'bg-blue-100', borderColor: 'border-blue-200' },
-    { label: t('stats.delivered'), value: stats.delivered || 0, icon: CheckCircle, color: 'text-[#25d366]', bg: 'bg-[#dcf8c6]', borderColor: 'border-[#25d366]/30' },
-    { label: t('stats.read'), value: stats.read || 0, icon: Eye, color: 'text-purple-500', bg: 'bg-purple-100', borderColor: 'border-purple-200' },
-    { label: t('stats.failed'), value: stats.failed || 0, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-100', borderColor: 'border-red-200' },
-  ] : [];
+  // Extract values from the new data structure
+  const campaignName = data?.campaign_name || t('stats.title');
+  const totalProcessed = data?.total_processed || 0;
+  const campaignStatus = data?.status || 'unknown';
+  const sentCount = data?.details?.sent || 0;
+  const failedCount = data?.details?.failed || 0; // Assuming failed might be in details, otherwise 0
+
+  const cards = [
+    { 
+      label: 'Total Processed', 
+      value: totalProcessed, 
+      icon: Clock, 
+      color: 'text-blue-500', 
+      bg: 'bg-blue-100', 
+      borderColor: 'border-blue-200' 
+    },
+    { 
+      label: 'Sent', 
+      value: sentCount, 
+      icon: Send, 
+      color: 'text-[#25d366]', 
+      bg: 'bg-[#dcf8c6]', 
+      borderColor: 'border-[#25d366]/30' 
+    },
+    { 
+      label: 'Failed', 
+      value: failedCount, 
+      icon: AlertCircle, 
+      color: 'text-red-500', 
+      bg: 'bg-red-100', 
+      borderColor: 'border-red-200' 
+    },
+  ];
 
   return (
     <>
       <Helmet>
-        <title>{t('stats.title')} - {t('nav.appName')}</title>
+        <title>{campaignName} - {t('nav.appName')}</title>
       </Helmet>
       
       <div className="space-y-8">
@@ -68,11 +94,19 @@ const CampaignStats = () => {
               </Button>
              </Link>
             <div>
-              <h1 className="text-3xl font-bold text-[#075e54]  mb-1 flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-[#075e54] mb-1 flex items-center gap-2">
                 <BarChart2 className="w-8 h-8" />
-                {t('stats.title')}
+                {campaignName}
               </h1>
-              <p className="text-[#128c7e] ">{t('stats.subtitle')}</p>
+              <div className="flex items-center gap-2 text-[#128c7e]">
+                <span>{t('stats.subtitle')}</span>
+                <span className="text-white/50">•</span>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase ${
+                  campaignStatus === 'completed' ? 'bg-blue-500 text-white' : 'bg-yellow-400 text-yellow-900'
+                }`}>
+                  {campaignStatus}
+                </span>
+              </div>
             </div>
           </div>
           <Button 
@@ -86,9 +120,9 @@ const CampaignStats = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {loading ? (
-             [1, 2, 3, 4].map((i) => (
+             [1, 2, 3].map((i) => (
                 <div key={i} className="h-32 bg-gray-100 rounded-xl animate-pulse" />
              ))
           ) : (
@@ -118,7 +152,7 @@ const CampaignStats = () => {
         </div>
 
         {/* Charts/Progress Section */}
-        {!loading && stats && (
+        {!loading && data && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -128,52 +162,34 @@ const CampaignStats = () => {
             <h2 className="text-xl font-bold text-[#075e54] mb-6">Performance Overview</h2>
             
             <div className="space-y-6">
-              {/* Delivery Rate */}
+              {/* Sent Rate */}
               <div>
                 <div className="flex justify-between mb-2 text-sm font-medium">
-                  <span className="text-[#075e54]">{t('stats.deliveryRate')}</span>
-                  <span className="text-[#128c7e]">{calculatePercentage(stats.delivered, stats.total)}%</span>
+                  <span className="text-[#075e54]">Sent Rate</span>
+                  <span className="text-[#128c7e]">{calculatePercentage(sentCount, totalProcessed)}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-3">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${calculatePercentage(stats.delivered, stats.total)}%` }}
+                    animate={{ width: `${calculatePercentage(sentCount, totalProcessed)}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
                     className="bg-[#25d366] h-3 rounded-full" 
                   />
                 </div>
               </div>
 
-              {/* Read Rate */}
-              <div>
-                <div className="flex justify-between mb-2 text-sm font-medium">
-                  <span className="text-[#075e54]">{t('stats.readRate')}</span>
-                  <span className="text-purple-600">{calculatePercentage(stats.read, stats.total)}%</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-3">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${calculatePercentage(stats.read, stats.total)}%` }}
-                    transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                    className="bg-purple-500 h-3 rounded-full" 
-                  />
-                </div>
-              </div>
-
-              {/* Failure Rate */}
-              <div>
-                <div className="flex justify-between mb-2 text-sm font-medium">
-                  <span className="text-[#075e54]">Failure Rate</span>
-                  <span className="text-red-500">{calculatePercentage(stats.failed, stats.total)}%</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-3">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${calculatePercentage(stats.failed, stats.total)}%` }}
-                    transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-                    className="bg-red-500 h-3 rounded-full" 
-                  />
-                </div>
+              {/* Status Indicator */}
+              <div className="pt-4 border-t border-gray-100 mt-4">
+                 <div className="flex items-center gap-2">
+                    {campaignStatus === 'processing' ? (
+                      <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-5 h-5 text-blue-500" />
+                    )}
+                    <span className="text-sm font-medium text-gray-700">
+                      Campaign is currently <span className="font-bold">{campaignStatus}</span>
+                    </span>
+                 </div>
               </div>
             </div>
           </motion.div>

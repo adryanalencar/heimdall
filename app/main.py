@@ -32,7 +32,7 @@ def get_db():
 # 📡 CONNECTIONS
 # ==========================================
 
-@app.post("/connections/", response_model=schemas.Connection)
+@app.post("/connections", response_model=schemas.Connection)
 def create_connection(conn: schemas.ConnectionCreate, db: Session = Depends(get_db)):
     db_conn = models.Connection(**conn.dict())
     db.add(db_conn)
@@ -40,7 +40,7 @@ def create_connection(conn: schemas.ConnectionCreate, db: Session = Depends(get_
     db.refresh(db_conn)
     return db_conn
 
-@app.get("/connections/", response_model=List[schemas.Connection])
+@app.get("/connections", response_model=List[schemas.Connection])
 def list_connections(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return db.query(models.Connection).offset(skip).limit(limit).all()
 
@@ -55,7 +55,7 @@ def get_connection(connection_id: int, db: Session = Depends(get_db)):
 # 🏷️ TAGS
 # ==========================================
 
-@app.post("/tags/", response_model=schemas.Tag)
+@app.post("/tags", response_model=schemas.Tag)
 def create_tag(tag: schemas.TagCreate, db: Session = Depends(get_db)):
     db_tag = models.Tag(name=tag.name)
     db.add(db_tag)
@@ -63,7 +63,7 @@ def create_tag(tag: schemas.TagCreate, db: Session = Depends(get_db)):
     db.refresh(db_tag)
     return db_tag
 
-@app.get("/tags/", response_model=List[schemas.Tag])
+@app.get("/tags", response_model=List[schemas.Tag])
 def list_tags(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return db.query(models.Tag).offset(skip).limit(limit).all()
 
@@ -78,7 +78,7 @@ def get_tag(tag_id: int, db: Session = Depends(get_db)):
 # 👤 CONTACTS
 # ==========================================
 
-@app.post("/contacts/", response_model=schemas.Contact)
+@app.post("/contacts", response_model=schemas.Contact)
 def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)):
     # Verifica duplicidade
     existing = db.query(models.Contact).filter(models.Contact.number == contact.number).first()
@@ -94,8 +94,8 @@ def create_contact(contact: schemas.ContactCreate, db: Session = Depends(get_db)
     db.refresh(db_contact)
     return db_contact
 
-@app.get("/contacts/", response_model=List[schemas.Contact])
-def list_contacts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@app.get("/contacts", response_model=List[schemas.Contact])
+def list_contacts(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
     return db.query(models.Contact).offset(skip).limit(limit).all()
 
 @app.get("/contacts/{contact_id}", response_model=schemas.Contact)
@@ -109,7 +109,7 @@ def get_contact(contact_id: int, db: Session = Depends(get_db)):
 # 📋 CONTACT LISTS
 # ==========================================
 
-@app.get("/lists/", response_model=List[schemas.ContactList])
+@app.get("/lists", response_model=List[schemas.ContactList])
 def list_contact_lists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return db.query(models.ContactList).offset(skip).limit(limit).all()
 
@@ -125,7 +125,7 @@ def get_contact_list(list_id: int, db: Session = Depends(get_db)):
 # 📢 CAMPAIGNS
 # ==========================================
 
-@app.post("/campaigns/start")
+@app.post("/campaigns")
 def create_and_start_campaign(
     campaign_in: schemas.CampaignCreate, 
     background_tasks: BackgroundTasks, 
@@ -193,7 +193,7 @@ def create_and_start_campaign(
 
     return {"status": "started", "campaign_id": new_campaign.id, "total_contacts": len(contacts_data)}
 
-@app.get("/campaigns/", response_model=List[schemas.Campaign])
+@app.get("/campaigns", response_model=List[schemas.Campaign])
 def list_campaigns(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return db.query(models.Campaign).offset(skip).limit(limit).all()
 

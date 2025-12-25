@@ -70,3 +70,7 @@ docker-compose.override.yml
 *.swo
 .DS_Store
 Thumbs.db
+
+import.js
+extract.js
+membros_grupo.csv
