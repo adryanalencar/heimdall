@@ -8,6 +8,8 @@ import Dashboard from '@/pages/Dashboard';
 import Connections from '@/pages/Connections';
 import Tags from '@/pages/Tags';
 import Contacts from '@/pages/Contacts';
+import ContactLists from '@/pages/ContactLists';
+import ContactImport from '@/pages/ContactImport';
 import Campaigns from '@/pages/Campaigns';
 import CampaignStats from '@/pages/CampaignStats';
 import CampaignLogs from '@/pages/CampaignLogs';
@@ -28,6 +30,8 @@ function App() {
             <Route path="/connections" element={<Connections />} />
             <Route path="/tags" element={<Tags />} />
             <Route path="/contacts" element={<Contacts />} />
+            <Route path="/lists" element={<ContactLists />} />
+            <Route path="/contacts/import" element={<ContactImport />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/campaigns/:id/stats" element={<CampaignStats />} />
             <Route path="/campaigns/:id/logs" element={<CampaignLogs />} />

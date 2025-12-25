@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -113,6 +113,14 @@ def get_contact(contact_id: int, db: Session = Depends(get_db)):
 def list_contact_lists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return db.query(models.ContactList).offset(skip).limit(limit).all()
 
+@app.post("/lists", response_model=schemas.ContactList)
+def create_contact_list(list_in: schemas.ContactListCreate, db: Session = Depends(get_db)):
+    new_list = models.ContactList(name=list_in.name)
+    db.add(new_list)
+    db.commit()
+    db.refresh(new_list)
+    return new_list
+
 @app.get("/lists/{list_id}", response_model=schemas.ContactList)
 def get_contact_list(list_id: int, db: Session = Depends(get_db)):
     # Aqui retornará a lista E os contatos dentro dela (definido no schema)
@@ -121,6 +129,52 @@ def get_contact_list(list_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="List not found")
     return lst
 
+# ==========================================
+# 📥 CONTACT IMPORT
+# ==========================================
+
+@app.post("/contacts/import", response_model=schemas.ContactImportResponse)
+def import_contacts(
+    payload: schemas.ContactImportRequest = Body(...),
+    db: Session = Depends(get_db)
+):
+    contacts = payload.contacts
+    if not contacts:
+        raise HTTPException(status_code=400, detail="No contacts provided")
+
+    tags = db.query(models.Tag).filter(models.Tag.id.in_(payload.tag_ids)).all() if payload.tag_ids else []
+
+    contact_list = None
+    if payload.list_id:
+        contact_list = db.query(models.ContactList).filter(models.ContactList.id == payload.list_id).first()
+        if not contact_list:
+            raise HTTPException(status_code=404, detail="List not found")
+
+    created = 0
+    skipped = 0
+
+    for c in contacts:
+        existing = db.query(models.Contact).filter(models.Contact.number == c.number).first()
+        if existing:
+            skipped += 1
+            continue
+
+        new_contact = models.Contact(name=c.name, number=c.number)
+        new_contact.tags = tags
+        if contact_list:
+            new_contact.lists.append(contact_list)
+
+        db.add(new_contact)
+        created += 1
+
+    db.commit()
+
+    return schemas.ContactImportResponse(
+        imported=created,
+        skipped=skipped,
+        list_id=payload.list_id,
+        tag_ids=payload.tag_ids,
+    )
 # ==========================================
 # 📢 CAMPAIGNS
 # ==========================================

@@ -56,6 +56,22 @@ class ContactList(ContactListBase):
     class Config:
         orm_mode = True
 
+# --- Contact Import ---
+class ContactImportItem(BaseModel):
+    name: str
+    number: str
+
+class ContactImportRequest(BaseModel):
+    contacts: List[ContactImportItem]
+    tag_ids: List[int] = []
+    list_id: Optional[int] = None
+
+class ContactImportResponse(BaseModel):
+    imported: int
+    skipped: int
+    list_id: Optional[int] = None
+    tag_ids: List[int] = []
+
 # --- Campaign ---
 class CampaignCreate(BaseModel):
     name: str
