@@ -15,6 +15,7 @@ const Campaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [connections, setConnections] = useState([]);
   const [tags, setTags] = useState([]);
+  const [contactLists, setContactLists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -33,6 +34,7 @@ const Campaigns = () => {
     fetchCampaigns();
     fetchConnections();
     fetchTags();
+    fetchContactLists();
   }, []);
 
   const fetchCampaigns = async () => {
@@ -70,6 +72,16 @@ const Campaigns = () => {
       setTags(Array.isArray(data) ? data : []);
     } catch (error) {
       setTags([]);
+    }
+  };
+
+  const fetchContactLists = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/lists');
+      const data = await response.json();
+      setContactLists(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setContactLists([]);
     }
   };
 
@@ -293,6 +305,26 @@ const Campaigns = () => {
                 </select>
               </div>
               <div className="space-y-2">
+                <Label htmlFor="contact_list_id" className="text-[#075e54]">{t('campaigns.contactList')} {t('common.optional')}</Label>
+                <select
+                  id="contact_list_id"
+                  value={formData.contact_list_id}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    contact_list_id: e.target.value,
+                    target_tags_ids: e.target.value ? [] : formData.target_tags_ids,
+                  })}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-[#075e54] focus:ring-[#128c7e] focus:border-[#128c7e] focus:outline-none"
+                >
+                  <option value="">{t('campaigns.selectContactList')}</option>
+                  {contactLists.map((list) => (
+                    <option key={list.id} value={list.id}>
+                      {list.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="messages_per_minute" className="text-[#075e54]">{t('campaigns.msgsPerMin')}</Label>
                 <Input
                   id="messages_per_minute"
@@ -330,7 +362,7 @@ const Campaigns = () => {
               />
             </div>
 
-            {tags.length > 0 && (
+            {tags.length > 0 && !formData.contact_list_id && (
               <div className="space-y-2">
                 <Label className="text-[#075e54]">{t('campaigns.targetTags')} {t('common.optional')}</Label>
                 <div className="flex gap-2 flex-wrap">

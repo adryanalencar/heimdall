@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MessageSquare, Link2, Tag, Users, Megaphone, LayoutDashboard } from 'lucide-react';
+import { MessageSquare, Link2, Tag, Users, Megaphone, LayoutDashboard, ClipboardList, Upload } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
@@ -15,6 +15,8 @@ const Layout = ({ children }) => {
     { path: '/connections', label: t('nav.connections'), icon: Link2 },
     { path: '/tags', label: t('nav.tags'), icon: Tag },
     { path: '/contacts', label: t('nav.contacts'), icon: Users },
+    { path: '/lists', label: t('nav.lists'), icon: ClipboardList },
+    { path: '/contacts/import', label: t('nav.contactsImport'), icon: Upload },
     { path: '/campaigns', label: t('nav.campaigns'), icon: Megaphone },
   ];
 
