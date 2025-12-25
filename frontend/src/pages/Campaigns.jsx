@@ -169,6 +169,30 @@ const Campaigns = () => {
     }
   };
 
+  const handleResumeCampaign = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8000/campaigns/${id}/resume`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        toast({
+          title: t('common.success'),
+          description: t('campaigns.successResume'),
+        });
+        fetchCampaigns();
+      } else {
+        throw new Error('Failed to resume campaign');
+      }
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: t('campaigns.errorResume'),
+        variant: 'destructive',
+      });
+    }
+  };
+
   const toggleTag = (tagId) => {
     setFormData((prev) => ({
       ...prev,
@@ -181,6 +205,7 @@ const Campaigns = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'running':
+      case 'processing':
         return <Play className="w-4 h-4 text-[#25d366]" />;
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-blue-500" />;
@@ -196,6 +221,7 @@ const Campaigns = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'running':
+      case 'processing':
         return 'bg-[#dcf8c6] text-[#075e54] border-[#25d366]';
       case 'completed':
         return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -407,7 +433,16 @@ const Campaigns = () => {
                           {t('campaigns.logs')}
                         </Button>
                       </Link>
-                      {campaign.status === 'running' ? (
+                      {campaign.status === 'paused' ? (
+                        <Button
+                          onClick={() => handleResumeCampaign(campaign.id)}
+                          size="sm"
+                          className="gap-2 bg-[#25d366] hover:bg-[#128c7e] text-white"
+                        >
+                          <Play className="w-4 h-4" />
+                          {t('campaigns.resume')}
+                        </Button>
+                      ) : campaign.status === 'running' || campaign.status === 'processing' ? (
                         <Button
                           onClick={() => handlePauseCampaign(campaign.id)}
                           size="sm"

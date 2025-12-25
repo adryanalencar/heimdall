@@ -204,6 +204,71 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Campaign not found")
     return campaign
 
+@app.post("/campaigns/{campaign_id}/pause")
+def pause_campaign(campaign_id: int, db: Session = Depends(get_db)):
+    campaign = db.query(models.Campaign).filter(models.Campaign.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    campaign.status = "paused"
+    db.commit()
+    return {"status": "paused", "campaign_id": campaign.id}
+
+@app.post("/campaigns/{campaign_id}/resume")
+def resume_campaign(
+    campaign_id: int,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    campaign = db.query(models.Campaign).filter(models.Campaign.id == campaign_id).first()
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.status != "paused":
+        raise HTTPException(status_code=400, detail="Only paused campaigns can be resumed")
+
+    contact_list = db.query(models.ContactList).filter(models.ContactList.id == campaign.contact_list_id).first()
+    if not contact_list:
+        raise HTTPException(status_code=404, detail="Contact list not found")
+
+    processed_numbers = {
+        row[0]
+        for row in db.query(models.CampaignLog.contact_number)
+        .filter(models.CampaignLog.campaign_id == campaign.id)
+        .distinct()
+        .all()
+    }
+    contacts_data = [
+        {"number": c.number, "name": c.name}
+        for c in contact_list.contacts
+        if c.number not in processed_numbers
+    ]
+
+    conn = db.query(models.Connection).filter(models.Connection.id == campaign.connection_id).first()
+    if not conn:
+        raise HTTPException(status_code=404, detail="Connection not found")
+
+    campaign.status = "processing"
+    db.commit()
+
+    campaign_dict = {
+        "id": campaign.id,
+        "message_body": campaign.message_body,
+        "media_url": campaign.media_url,
+        "media_type": campaign.media_type,
+        "messages_per_minute": campaign.messages_per_minute
+    }
+
+    connection_dict = {
+        "api_url": conn.api_url,
+        "api_key": conn.api_key,
+        "instance_name": conn.instance_name
+    }
+
+    background_tasks.add_task(services.publish_campaign_to_queue, campaign_dict, connection_dict, contacts_data)
+
+    return {"status": "resumed", "campaign_id": campaign.id, "total_contacts": len(contacts_data)}
+
 # ==========================================
 # 📊 STATS & LOGS
 # ==========================================
