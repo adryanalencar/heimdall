@@ -1,0 +1,49 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* #ffffff - Main background */
+    --foreground: 175 64% 18%; /* #075e54 - Dark teal text for contrast */
+
+    --card: 0 0% 100%;
+    --card-foreground: 175 64% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 175 64% 18%;
+
+    --primary: 174 77% 31%; /* #128c7e - Teal */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 90 70% 88%; /* #dcf8c6 - Light Green */
+    --secondary-foreground: 175 64% 18%;
+
+    --muted: 33 24% 93%; /* #ece5dd - Light Gray */
+    --muted-foreground: 175 40% 40%;
+
+    --accent: 142 70% 49%; /* #25d366 - Bright Green */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 33 24% 85%;
+    --input: 33 24% 85%;
+    --ring: 142 70% 49%;
+
+    --radius: 0.5rem;
+  }
+}
+
+body {
+  @apply bg-[#ece5dd] text-whatsapp-dark-teal; /* Light gray background, dark teal text */
+  font-family: 'Inter', 'DM Sans', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}

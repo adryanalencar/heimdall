@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: whatsapp_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    # Mapeamos as variáveis do .env para as variáveis que a imagem do RabbitMQ exige
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: whatsapp_api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    # Carrega todas as variáveis do .env automaticamente para dentro do Python
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build: .
+    container_name: whatsapp_worker
+    command: python -u worker.py
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: whatsapp_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app             # Sincroniza seu código em tempo real (Hot Reload)
+      - /app/node_modules           # Isola as dependências do container
+    environment:
+      - VITE_API_URL=http://localhost:8000  # URL da API para o Axios/Fetch usar
+    depends_on:
+      - api
