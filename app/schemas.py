@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any
+from datetime import datetime
 
 # --- Connection ---
 class ConnectionBase(BaseModel):
@@ -42,6 +43,19 @@ class Contact(BaseModel):
     class Config:
         orm_mode = True
 
+# --- Contact Lists (NOVO) ---
+class ContactListBase(BaseModel):
+    name: str
+
+class ContactListCreate(ContactListBase):
+    pass
+
+class ContactList(ContactListBase):
+    id: int
+    contacts: List[Contact] = [] # Retorna os contatos da lista
+    class Config:
+        orm_mode = True
+
 # --- Campaign ---
 class CampaignCreate(BaseModel):
     name: str
@@ -49,8 +63,20 @@ class CampaignCreate(BaseModel):
     media_url: Optional[str] = None
     media_type: Optional[str] = None
     messages_per_minute: int = 10
-    
     contact_list_id: Optional[int] = None
     target_tags_ids: Optional[List[int]] = None
-    
-    connection_id: int # Obrigatório selecionar a instância
+    connection_id: int
+
+class Campaign(BaseModel):
+    id: int
+    name: str
+    message_body: str
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
+    messages_per_minute: int
+    status: str
+    connection_id: int
+    contact_list_id: int
+    # connection: Connection  <-- Opcional: Se quiser aninhar os dados da conexão
+    class Config:
+        orm_mode = True
