@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const parseContactsPayload = (raw) => {
   const trimmed = raw.trim();
@@ -57,7 +58,7 @@ const ContactImport = () => {
 
   const fetchTags = async () => {
     try {
-      const response = await fetch('http://localhost:8000/tags');
+      const response = await apiFetch('/tags');
       const data = await response.json();
       setTags(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -67,7 +68,7 @@ const ContactImport = () => {
 
   const fetchLists = async () => {
     try {
-      const response = await fetch('http://localhost:8000/lists');
+      const response = await apiFetch('/lists');
       const data = await response.json();
       setLists(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -127,9 +128,8 @@ const ContactImport = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/contacts/import', {
+      const response = await apiFetch('/contacts/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contacts,
           tag_ids: selectedTags,

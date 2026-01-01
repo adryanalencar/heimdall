@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/ui/use-toast';
+import { apiFetch } from '@/lib/api';
 
 const CampaignLogs = () => {
   const { id } = useParams();
@@ -23,7 +24,7 @@ const CampaignLogs = () => {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/campaigns/${id}/logs`);
+      const response = await apiFetch(`/campaigns/${id}/logs`);
       if (response.ok) {
         const data = await response.json();
         setLogs(Array.isArray(data) ? data : []);

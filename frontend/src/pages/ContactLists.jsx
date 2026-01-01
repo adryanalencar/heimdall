@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const ContactLists = () => {
   const [lists, setLists] = useState([]);
@@ -24,7 +25,7 @@ const ContactLists = () => {
   const fetchLists = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/lists');
+      const response = await apiFetch('/lists');
       const data = await response.json();
       setLists(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -41,7 +42,7 @@ const ContactLists = () => {
 
   const fetchListDetails = async (listId) => {
     try {
-      const response = await fetch(`http://localhost:8000/lists/${listId}`);
+      const response = await apiFetch(`/lists/${listId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch list details');
       }
@@ -59,9 +60,8 @@ const ContactLists = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/lists', {
+      const response = await apiFetch('/lists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 

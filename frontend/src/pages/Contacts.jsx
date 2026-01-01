@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const Contacts = () => {
   const [contacts, setContacts] = useState([]);
@@ -29,7 +30,7 @@ const Contacts = () => {
   const fetchContacts = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/contacts');
+      const response = await apiFetch('/contacts');
       const data = await response.json();
       setContacts(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -46,7 +47,7 @@ const Contacts = () => {
 
   const fetchTags = async () => {
     try {
-      const response = await fetch('http://localhost:8000/tags');
+      const response = await apiFetch('/tags');
       const data = await response.json();
       setTags(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -58,9 +59,8 @@ const Contacts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/contacts', {
+      const response = await apiFetch('/contacts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -85,7 +85,7 @@ const Contacts = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/contacts/${id}`, {
+      const response = await apiFetch(`/contacts/${id}`, {
         method: 'DELETE',
       });
 
