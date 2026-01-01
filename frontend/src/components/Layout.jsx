@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MessageSquare, Link2, Tag, Users, Megaphone, LayoutDashboard, ClipboardList, Upload } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { clearToken } from '@/lib/auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const navItems = [
@@ -28,6 +30,11 @@ const Layout = ({ children }) => {
     { path: '/lists', label: t('nav.lists'), icon: ClipboardList },
     { path: '/contacts/import', label: t('nav.contactsImport'), icon: Upload },
   ];
+
+  const handleLogout = () => {
+    clearToken();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-[#ece5dd]">
@@ -105,6 +112,13 @@ const Layout = ({ children }) => {
                 })}
               </div>
               <LanguageSwitcher />
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm font-semibold text-[#dcf8c6] hover:text-white transition-colors"
+              >
+                {t('auth.logout')}
+              </button>
             </div>
           </div>
         </div>
@@ -113,7 +127,7 @@ const Layout = ({ children }) => {
       <div className="bg-[#009688] h-32 w-full absolute top-16 left-0 z-0 hidden" />
       
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+        {children || <Outlet />}
       </main>
     </div>
   );

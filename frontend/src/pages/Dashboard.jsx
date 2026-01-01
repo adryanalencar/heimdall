@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { Link2, Tag, Users, Megaphone, TrendingUp, Activity } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -21,10 +22,10 @@ const Dashboard = () => {
   const fetchStats = async () => {
     try {
       const [connectionsRes, tagsRes, contactsRes, campaignsRes] = await Promise.all([
-        fetch('http://localhost:8000/connections').catch(() => ({ json: async () => [] })),
-        fetch('http://localhost:8000/tags').catch(() => ({ json: async () => [] })),
-        fetch('http://localhost:8000/contacts').catch(() => ({ json: async () => [] })),
-        fetch('http://localhost:8000/campaigns').catch(() => ({ json: async () => [] })),
+        apiFetch('/connections').catch(() => ({ json: async () => [] })),
+        apiFetch('/tags').catch(() => ({ json: async () => [] })),
+        apiFetch('/contacts').catch(() => ({ json: async () => [] })),
+        apiFetch('/campaigns').catch(() => ({ json: async () => [] })),
       ]);
 
       const connections = await connectionsRes.json();

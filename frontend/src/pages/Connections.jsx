@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const Connections = () => {
   const [connections, setConnections] = useState([]);
@@ -28,7 +29,7 @@ const Connections = () => {
   const fetchConnections = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/connections');
+      const response = await apiFetch('/connections');
       const data = await response.json();
       setConnections(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -46,9 +47,8 @@ const Connections = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/connections', {
+      const response = await apiFetch('/connections', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -73,7 +73,7 @@ const Connections = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/connections/${id}`, {
+      const response = await apiFetch(`/connections/${id}`, {
         method: 'DELETE',
       });
 

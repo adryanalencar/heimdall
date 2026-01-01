@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const Tags = () => {
   const [tags, setTags] = useState([]);
@@ -25,7 +26,7 @@ const Tags = () => {
   const fetchTags = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/tags');
+      const response = await apiFetch('/tags');
       const data = await response.json();
       setTags(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -43,9 +44,8 @@ const Tags = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/tags', {
+      const response = await apiFetch('/tags', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -70,7 +70,7 @@ const Tags = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/tags/${id}`, {
+      const response = await apiFetch(`/tags/${id}`, {
         method: 'DELETE',
       });
 

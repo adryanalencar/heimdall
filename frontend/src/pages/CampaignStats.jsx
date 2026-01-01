@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle, Send, AlertCircle, RefreshCw, BarChart2, Clock,
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/ui/use-toast';
+import { apiFetch } from '@/lib/api';
 
 const CampaignStats = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const CampaignStats = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/campaigns/${id}/stats`);
+      const response = await apiFetch(`/campaigns/${id}/stats`);
       if (response.ok) {
         const jsonData = await response.json();
         setData(jsonData);

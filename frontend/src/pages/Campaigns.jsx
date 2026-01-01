@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { apiFetch } from '@/lib/api';
 
 const Campaigns = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -40,7 +41,7 @@ const Campaigns = () => {
   const fetchCampaigns = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/campaigns');
+      const response = await apiFetch('/campaigns');
       const data = await response.json();
       setCampaigns(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -57,7 +58,7 @@ const Campaigns = () => {
 
   const fetchConnections = async () => {
     try {
-      const response = await fetch('http://localhost:8000/connections');
+      const response = await apiFetch('/connections');
       const data = await response.json();
       setConnections(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -67,7 +68,7 @@ const Campaigns = () => {
 
   const fetchTags = async () => {
     try {
-      const response = await fetch('http://localhost:8000/tags');
+      const response = await apiFetch('/tags');
       const data = await response.json();
       setTags(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -77,7 +78,7 @@ const Campaigns = () => {
 
   const fetchContactLists = async () => {
     try {
-      const response = await fetch('http://localhost:8000/lists');
+      const response = await apiFetch('/lists');
       const data = await response.json();
       setContactLists(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -96,9 +97,8 @@ const Campaigns = () => {
         delete payload.media_type;
       }
 
-      const response = await fetch('http://localhost:8000/campaigns', {
+      const response = await apiFetch('/campaigns', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...payload,
           status: 'draft',
@@ -135,7 +135,7 @@ const Campaigns = () => {
 
   const handleStartCampaign = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/campaigns/${id}/start`, {
+      const response = await apiFetch(`/campaigns/${id}/start`, {
         method: 'POST',
       });
 
@@ -159,7 +159,7 @@ const Campaigns = () => {
 
   const handlePauseCampaign = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/campaigns/${id}/pause`, {
+      const response = await apiFetch(`/campaigns/${id}/pause`, {
         method: 'POST',
       });
 
@@ -183,7 +183,7 @@ const Campaigns = () => {
 
   const handleResumeCampaign = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/campaigns/${id}/resume`, {
+      const response = await apiFetch(`/campaigns/${id}/resume`, {
         method: 'POST',
       });
 
