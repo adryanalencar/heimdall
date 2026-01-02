@@ -35,9 +35,9 @@ services:
       - 15672
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-secret_password_123}
+    env:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
   api:
     build:
       context: .
@@ -47,11 +47,11 @@ services:
       - 8000
     volumes:
       - data:/app/data
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/campaign_manager.db}
+    env:
+      DATABASE_URL: ${DATABASE_URL}
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
-      RABBITMQ_PASS: ${RABBITMQ_PASS:-secret_password_123}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
     depends_on:
       - rabbitmq
   worker:
@@ -61,11 +61,11 @@ services:
     command: python -u worker.py
     volumes:
       - data:/app/data
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/campaign_manager.db}
+    env:
+      DATABASE_URL: ${DATABASE_URL}
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
-      RABBITMQ_PASS: ${RABBITMQ_PASS:-secret_password_123}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
     depends_on:
       - rabbitmq
   frontend:
@@ -74,8 +74,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 3000
-    environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    env:
+      VITE_API_URL: ${VITE_API_URL}
     depends_on:
       - api
 

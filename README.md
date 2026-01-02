@@ -105,7 +105,6 @@ O sistema subirá os seguintes serviços:
 ## ☁️ Deploy no EasyPanel
 
 O projeto inclui o arquivo `easypanel.yml` com a definição completa dos serviços (API, Worker, RabbitMQ e Frontend).
-Use o arquivo `.env.easypanel` como base para cadastrar as variáveis no setup do EasyPanel.
 
 1. No EasyPanel, crie um novo app usando o template do repositório.
 2. Ajuste as variáveis de ambiente na aba **Variables**:
