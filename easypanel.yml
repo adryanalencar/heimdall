@@ -1,0 +1,84 @@
+name: Heimdall
+slug: heimdall
+description: Orquestrador de campanhas de WhatsApp (FastAPI + RabbitMQ + Worker + React).
+icon: https://raw.githubusercontent.com/easypanel-io/templates/main/assets/default.png
+tags:
+  - fastapi
+  - react
+  - rabbitmq
+  - whatsapp
+  - campaigns
+
+variables:
+  - name: DATABASE_URL
+    label: Database URL
+    default: sqlite:////app/data/campaign_manager.db
+    required: true
+  - name: RABBITMQ_USER
+    label: RabbitMQ User
+    default: admin
+    required: true
+  - name: RABBITMQ_PASS
+    label: RabbitMQ Password
+    default: secret_password_123
+    required: true
+  - name: VITE_API_URL
+    label: Frontend API URL (public)
+    default: http://localhost:8000
+    required: true
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - 5672
+      - 15672
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-secret_password_123}
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - 8000
+    volumes:
+      - data:/app/data
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/campaign_manager.db}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-secret_password_123}
+    depends_on:
+      - rabbitmq
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python -u worker.py
+    volumes:
+      - data:/app/data
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/campaign_manager.db}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-secret_password_123}
+    depends_on:
+      - rabbitmq
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    depends_on:
+      - api
+
+volumes:
+  data:
+  rabbitmq-data:

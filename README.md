@@ -102,6 +102,27 @@ O sistema subirá os seguintes serviços:
 
 ---
 
+## ☁️ Deploy no EasyPanel
+
+O projeto inclui o arquivo `easypanel.yml` com a definição completa dos serviços (API, Worker, RabbitMQ e Frontend).
+Use o arquivo `.env.easypanel` como base para cadastrar as variáveis no setup do EasyPanel.
+
+1. No EasyPanel, crie um novo app usando o template do repositório.
+2. Ajuste as variáveis de ambiente na aba **Variables**:
+   * `DATABASE_URL` (padrão: `sqlite:////app/data/campaign_manager.db`)
+   * `RABBITMQ_USER`
+   * `RABBITMQ_PASS`
+   * `VITE_API_URL` (URL pública da API, ex: `https://api.seudominio.com`)
+3. Exponha as portas desejadas:
+   * `8000` (API)
+   * `3000` (Frontend)
+   * `15672` (console do RabbitMQ, opcional)
+4. Faça o deploy e acompanhe os logs para validar a conexão do Worker com o RabbitMQ.
+
+> Dica: mantenha `RABBITMQ_HOST` como `rabbitmq` para resolver o serviço interno.
+
+---
+
 ## 📖 Guia de Uso (API Flow)
 
 ### Passo 1: Cadastrar uma Conexão (Instância)
